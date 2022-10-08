@@ -8,7 +8,7 @@ const useMarvelService = () => {
     const _baseOffset = '210'
 
     const getComics = async () => {
-        const res = await request(`https://gateway.marvel.com:443/v1/public/comics?${_apikey}`)
+        const res = await request(`https://gateway.marvel.com:443/v1/public/comics?limit=9&${_apikey}`)
         return res.data.results.map(_transformComics);
     }
 

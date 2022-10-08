@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import useMarvelService from '../../services/MarvelService';
+import Spinner from '../spinner/spinner';
+import ErrorMessage from '../errorMessage/ErrorMessage';
 
 import './comicsList.scss';
-import uw from '../../resources/img/UW.png';
-import xMen from '../../resources/img/x-men.png';
 
 const ComicsList = () => {
 
@@ -15,25 +15,25 @@ const ComicsList = () => {
     const {loading, error, getComics} = useMarvelService();
 
     useEffect(() => {
-        onRequest();
+        onRequest(true);
     }, [])
 
-    const onRequest = () =>{
+    const onRequest = (initial) =>{
+        initial ? setNewItemLoading(false) : setNewItemLoading(true) 
         getComics()
             .then(onCharListLoaded)
     }
 
-    const onCharListLoaded = (CharList) => {
+    const onCharListLoaded = (newCharList) => {
         let end = false;
-        if (CharList.length < 9) {
+        if (newCharList.length < 9) {
             end = true;
         }
         
-        setCharList((charList) => CharList);
+        setCharList((charList) => [...charList, ...newCharList]);
         setNewItemLoading(false);
         setOffset((offset) => offset + 9);
         setCharEnded(end);
-        console.log(charList)
 
     }
 
@@ -46,10 +46,10 @@ const ComicsList = () => {
             
             return (
                 <li className="comics__item" key={item.id}>
-                    <a href="#">
+                    <a href={item.homepage}>
                         <img src={item.thumbnail} alt="ultimate war" className="comics__item-img"/>
                         <div className="comics__item-name">{item.name}</div>
-                        <div className="comics__item-price">{item.price}</div>
+                        <div className="comics__item-price">{`${item.price}$`}</div>
                     </a>
                 </li>
             )
@@ -64,13 +64,18 @@ const ComicsList = () => {
 
     const items = renderItems(charList);
 
-    // const errorMessage = error ? <ErrorMessage/> : null;
-    // const spinner = loading && !newItemLoading ? <Spinner/> : null;
+    const errorMessage = error ? <ErrorMessage/> : null;
+    const spinner = loading && !newItemLoading ? <Spinner/> : null;
 
     return (
         <div className="comics__list">
+            {errorMessage}
+            {spinner}
             {items}
-            <button className="button button__main button__long">
+            <button className="button button__main button__long"
+            style={{'display': charEnded ? 'none' : 'block'}}
+            disabled={newItemLoading}
+            onClick={() => {onRequest()}}>
                 <div className="inner">load more</div>
             </button>
         </div>
