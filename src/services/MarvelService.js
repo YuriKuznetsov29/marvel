@@ -7,9 +7,14 @@ const useMarvelService = () => {
     const _apikey = 'apikey=061d017f7244ea5abde010c88ab53e59';
     const _baseOffset = '210'
 
-    const getComics = async () => {
-        const res = await request(`https://gateway.marvel.com:443/v1/public/comics?limit=9&${_apikey}`)
+    const getComics = async (offset = _baseOffset) => {
+        const res = await request(`https://gateway.marvel.com:443/v1/public/comics?limit=8&&offset=${offset}&${_apikey}`)
         return res.data.results.map(_transformComics);
+    }
+
+    const getComic = async (id) => {
+        const res = await request(`${_apiBase}comics/${id}?${_apikey}`);
+        return _transformComics(res.data.results[0]);
     }
 
     const getAllCharacters = async (offset = _baseOffset) => {
@@ -56,11 +61,13 @@ const useMarvelService = () => {
                 id: comics.id,
                 name: comics.title,
                 description: comics.description,
+                pageCount: comics.pageCount ? `${comics.pageCount} p.` : 'No information about the number of pages',
                 thumbnail: comics.thumbnail.path + '.' + comics.thumbnail.extension,
                 homepage: comics.urls[0].url,
+                language: comics.textObjects.language || 'en-us',
                 price: comics.prices[0].price,
             }
     }
-    return {loading, error, clearError, getAllCharacters, getCharacter, getComics}
+    return {loading, error, clearError, getAllCharacters, getCharacter, getComics, getComic}
 }
 export default useMarvelService;

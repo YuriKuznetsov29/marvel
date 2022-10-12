@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 import useMarvelService from '../../services/MarvelService';
+
 import ErrorMessage from '../errorMessage/ErrorMessage';
 import Spinner from '../spinner/spinner';
-
+import { CSSTransition } from 'react-transition-group'
 import './charList.scss';
 
 const CharList = (props) => {
@@ -11,6 +12,7 @@ const CharList = (props) => {
     const [newItemLoading, setNewItemLoading] = useState(false);
     const [offset, setOffset] = useState(210);
     const [charEnded, setCharEnded] = useState(false);
+    const [inProp, setInProp] = useState(false);
 
     const {loading, error, getAllCharacters} = useMarvelService();
 
@@ -25,6 +27,7 @@ const CharList = (props) => {
     }
 
     const onCharListLoaded = (newCharList) => {
+        setInProp(false);
         let end = false;
         if (newCharList.length < 9) {
             end = true;
@@ -34,6 +37,7 @@ const CharList = (props) => {
         setNewItemLoading(false);
         setOffset((offset) => offset + 9);
         setCharEnded(end);
+        setInProp(true);
     }
 
     const itemRefs = useRef([]);
@@ -88,19 +92,21 @@ const CharList = (props) => {
     const spinner = loading && !newItemLoading ? <Spinner/> : null;
 
     return (
-        <div className="char__list">
-            {errorMessage}
-            {spinner}
-            {items}
-            <button
-            
-            className="button button__main button__long"
-            disabled={newItemLoading}
-            style={{'display': charEnded ? 'none' : 'block'}}
-            onClick={() => {onRequest(offset)}}>
-                <div className="inner">load more</div>
-            </button>
-        </div>
+        < CSSTransition in={inProp} timeout={600} classNames="my-node">
+            <div className="char__list">
+                {errorMessage}
+                {spinner}
+                {items}
+                <button
+                
+                className="button button__main button__long"
+                disabled={newItemLoading}
+                style={{'display': charEnded ? 'none' : 'block'}}
+                onClick={() => {onRequest(offset)}}>
+                    <div className="inner">load more</div>
+                </button>
+            </div>
+        </CSSTransition>
     )
     
 }
