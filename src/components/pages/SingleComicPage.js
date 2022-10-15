@@ -9,15 +9,36 @@ import './singleComicPage.scss';
 
 const SingleComicPage = () => {
     const {comicId} = useParams();
+    const {charId} = useParams();
     const [comic, setComic] = useState(null);
+    const [char, setChar] = useState({});
 
-    const {loading, error, getComic, clearError} = useMarvelService();
+    const {loading, error, getComic, clearError, getCharacter} = useMarvelService();
 
     
 
     useEffect(() => {
-        updateComic()
-    }, [comicId])
+        onContentLoading()
+    }, [charId, comicId])
+
+    const onContentLoading = () => {
+        if (comicId) {
+            updateComic();
+        } else if (charId) {
+            updateChar();
+        }
+    }
+
+    const onCharLoaded = (char) => {
+        setChar(char);
+        console.log(char)
+
+}
+
+const updateChar = () => {
+    getCharacter(charId)
+        .then(onCharLoaded)
+}
 
     const onComicLoaded = (comic) => {
         setComic(comic);
@@ -31,14 +52,21 @@ const SingleComicPage = () => {
 
     const errorMessage = error ? <ErrorMessage/> : null;
     const spinner = loading ? <Spinner/> : null;
-    const content = !(loading || error || !comic) ? <View comic={comic}/> : null;
+    const contentComics = !(loading || error || !comic) ? <View comic={comic}/> : null;
+    const contentChar = !(loading || error || !char) ? <ViewChar char={char}/> : null;
+    const content = () => {
+        if (comicId) {
+            return contentComics
+        } else if (charId) {
+            return contentChar
+        }}
 
     return (
         <>
             <AppBanner/>
             {errorMessage}
             {spinner}
-            {content}
+            {content()}
             
         </>
     )
@@ -60,6 +88,23 @@ const View = ({comic}) => {
                 <div className="single-comic__price">{`${price}$`}</div>
             </div>
             <Link to="/comics" className="single-comic__back">Back to all</Link>
+        </div>
+    )
+}
+
+const ViewChar = ({char}) => {
+    const {name, description, thumbnail} = char;
+
+    
+
+    return (
+        <div className="single-comic">
+            <img src={thumbnail} alt={name} className="single-comic__img"/>
+            <div className="single-comic__info">
+                <h2 className="single-comic__name">{name}</h2>
+                <p className="single-comic__descr">{description}</p>
+            </div>
+            <Link to="/" className="single-comic__back">Back to main</Link>
         </div>
     )
 }
