@@ -1,10 +1,25 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import useMarvelService from '../../services/MarvelService';
-
 import ErrorMessage from '../errorMessage/ErrorMessage';
 import Spinner from '../spinner/spinner';
-import { CSSTransition } from 'react-transition-group'
+import { CSSTransition } from 'react-transition-group';
+
 import './charList.scss';
+
+const setContent = (process, Component, newItemLoading) => {
+    switch (process) {
+        case 'waiting':
+            return <Spinner/>;
+        case 'loading':
+            return newItemLoading ? <Component/> : <Spinner/>;
+        case 'confirmed':
+            return <Component/>;
+        case 'error':
+            return <ErrorMessage/>;
+        default:
+            throw new Error('Unexpected process state');
+    }
+}
 
 const CharList = (props) => {
     
@@ -14,7 +29,9 @@ const CharList = (props) => {
     const [charEnded, setCharEnded] = useState(false);
     const [inProp, setInProp] = useState(false);
 
-    const {loading, error, getAllCharacters} = useMarvelService();
+    const {getAllCharacters, process, setProcess} = useMarvelService();
+
+    
 
     useEffect(() => {
         onRequest(offset, true);
@@ -24,6 +41,7 @@ const CharList = (props) => {
         initial ? setNewItemLoading(false) : setNewItemLoading(true) 
         getAllCharacters(offset)
             .then(onCharListLoaded)
+            .then(() => setProcess('confirmed'))
     }
 
     const onCharListLoaded = (newCharList) => {
@@ -80,25 +98,25 @@ const CharList = (props) => {
 
         return (
             <ul className="char__grid">
-                 {items}   
+               {items}     
             </ul>
         )
     }
 
+    const elements = useMemo(() => {
+        return setContent(process, () => renderItems(charList), newItemLoading);
+        // eslint-disable-next-line
+    }, [process])
+
 
     const items = renderItems(charList);
 
-    const errorMessage = error ? <ErrorMessage/> : null;
-    const spinner = loading && !newItemLoading ? <Spinner/> : null;
-
     return (
-        < CSSTransition in={inProp} timeout={600} classNames="my-node">
+        // < CSSTransition in={inProp} timeout={600} classNames="my-node">
             <div className="char__list">
-                {errorMessage}
-                {spinner}
-                {items}
+
+                {elements}
                 <button
-                
                 className="button button__main button__long"
                 disabled={newItemLoading}
                 style={{'display': charEnded ? 'none' : 'block'}}
@@ -106,7 +124,7 @@ const CharList = (props) => {
                     <div className="inner">load more</div>
                 </button>
             </div>
-        </CSSTransition>
+       // {/* </CSSTransition> */}
     )
     
 }

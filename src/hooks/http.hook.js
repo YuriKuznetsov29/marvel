@@ -29,7 +29,7 @@ export const useHttp = () => {
 
     const clearError = useCallback(() => {
         setError(null);
-        //setProcess('loading');
+        setProcess('loading');
     }, []);
 
     return {loading, request, error, clearError, process, setProcess}

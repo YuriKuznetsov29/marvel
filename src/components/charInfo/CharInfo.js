@@ -1,8 +1,5 @@
 import { useState, useEffect } from 'react';
-import Spinner from '../spinner/spinner';
 import useMarvelService from '../../services/MarvelService';
-import Skeleton from '../skeleton/Skeleton';
-import ErrorMessage from '../errorMessage/ErrorMessage';
 import setContent from '../../utils/setContent';
 
 import './charInfo.scss';
@@ -10,7 +7,7 @@ import './charInfo.scss';
 const CharInfo = (props) => {
     const [char, setChar] = useState(null);
 
-    const {loading, error, getCharacter, clearError, process, setProcess} = useMarvelService();
+    const {getCharacter, clearError, process, setProcess} = useMarvelService();
 
     useEffect(() => {
         updateChar()
@@ -21,7 +18,6 @@ const CharInfo = (props) => {
     }
 
     const updateChar = () => {
-        clearError()
         const {charId} = props
         if (!charId) {
             return;
@@ -32,12 +28,6 @@ const CharInfo = (props) => {
             .then(() => setProcess('confirmed'))
     }
     
-
-    // const skeleton = char || loading || error ? null : <Skeleton/>;
-    // const errorMessage = error ? <ErrorMessage/> : null;
-    // const spinner = loading ? <Spinner/> : null;
-    // const content = !(loading || error || !char) ? <View char={char}/> : null;
-
     return (
         <div className="char__info">
             {setContent(process, View, char)}
